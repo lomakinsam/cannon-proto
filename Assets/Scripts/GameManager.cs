@@ -22,5 +22,9 @@ public class GameManager : MonoBehaviour
 
         if (horizontalAxis != 0)
             cannon.RotateHorizontally(horizontalAxis * horizontalRotationSpeed * Time.deltaTime);
+
+        if (Input.GetKeyDown(KeyCode.Space))
+            cannon.DrawTrajectory();
+
     }
 }

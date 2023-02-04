@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -11,15 +11,26 @@ public class Cannon : MonoBehaviour
     private Transform tipDefault;
     [SerializeField]
     private Transform barrel;
+    [SerializeField]
+    private LineRenderer trajectoryLineRenderer;
 
-    [Header("Config")]
+    [Header("Rotation Limits")]
     [SerializeField]
     private Vector2 horizontalRotationRange = new Vector2(-20f, 20f);
     [SerializeField]
     private Vector2 verticalRotationRange = new Vector2(45f, 90f);
 
+    [Header("Other")]
+    [SerializeField]
+    private float shotPower = 10f;
+    [SerializeField]
+    private int trajectoryLineMaxLength = 100;
+
     private const float horizontalRotationDefautAngle = 0;
     private const float verticalRotationDefaultAngle = 90f;
+
+    private const float gravity = 9.8f;
+    private const int lineRendererPointsPerUnit = 2;
 
     private float horizontalAngle = horizontalRotationDefautAngle;
     private float verticalAngle = verticalRotationDefaultAngle;
@@ -52,5 +63,44 @@ public class Cannon : MonoBehaviour
     {
         horizontalAngle = Mathf.Clamp(horizontalAngle + angle, horizontalRotationRange.x, horizontalRotationRange.y);
         transform.rotation = Quaternion.AngleAxis(horizontalAngle, Vector3.up);
+    }
+
+    public void DrawTrajectory()
+    {
+        //y = x tan θ − gx2 / 2v2 cos2 θ
+
+        Vector3[] drawPoint = new Vector3[trajectoryLineMaxLength * lineRendererPointsPerUnit];
+
+        if (drawPoint.Length == 0)
+        {
+            trajectoryLineRenderer.positionCount = 0;
+            return;
+        }
+
+        drawPoint[0] = tip.position;
+
+        float distance = 0f;
+        float distanceStep = 1 / (float)lineRendererPointsPerUnit;
+        float shotAngle = Vector3.Angle(tipDefault.forward, tip.forward) * Mathf.Deg2Rad;
+
+        Vector3 tipOffset = tip.position - tipDefault.position;
+
+        for (int i = 1; i < drawPoint.Length; i++)
+        {
+            distance += distanceStep;
+
+            float angleTan = Mathf.Tan(shotAngle);
+            float angleCos = Mathf.Cos(shotAngle);
+
+            float height = distance * angleTan - (gravity * distance * distance) / (2 * shotPower * shotPower * angleCos * angleCos);
+
+            Vector3 point = tipDefault.position + tipDefault.forward * distance + tipOffset;
+            point.y += height;
+
+            drawPoint[i] = point;
+        }
+
+        trajectoryLineRenderer.positionCount = drawPoint.Length;
+        trajectoryLineRenderer.SetPositions(drawPoint);
     }
 }
