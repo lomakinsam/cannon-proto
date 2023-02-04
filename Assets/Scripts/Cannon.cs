@@ -102,7 +102,7 @@ public class Cannon : MonoBehaviour
 
     public void Shoot()
     {
-        Projectile projectile = Instantiate(projectilePrefab, tip.position, tip.rotation);
+        Projectile projectile = Instantiate(projectilePrefab);
         projectile.Release(shotPower, tipDefault, tip);
     }
 }
