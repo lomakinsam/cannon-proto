@@ -254,6 +254,7 @@ MonoBehaviour:
   tipDefault: {fileID: 1943153789}
   barrel: {fileID: 1836127051}
   trajectoryLineRenderer: {fileID: 1953749873}
+  projectilePrefab: {fileID: 3239497733802707, guid: a24c503e76bf21549b904f3f69b768df, type: 3}
   horizontalRotationRange: {x: -20, y: 20}
   verticalRotationRange: {x: 45, y: 90}
   shotPower: 10

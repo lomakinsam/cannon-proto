@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
@@ -23,8 +21,10 @@ public class GameManager : MonoBehaviour
         if (horizontalAxis != 0)
             cannon.RotateHorizontally(horizontalAxis * horizontalRotationSpeed * Time.deltaTime);
 
-        if (Input.GetKeyDown(KeyCode.Space))
+        if (verticalAxis != 0 || horizontalAxis != 0)
             cannon.DrawTrajectory();
 
+        if (Input.GetKeyDown(KeyCode.Space))
+            cannon.Shoot();
     }
 }

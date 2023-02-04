@@ -13,6 +13,8 @@ public class Cannon : MonoBehaviour
     private Transform barrel;
     [SerializeField]
     private LineRenderer trajectoryLineRenderer;
+    [SerializeField]
+    private Projectile projectilePrefab;
 
     [Header("Rotation Limits")]
     [SerializeField]
@@ -29,7 +31,6 @@ public class Cannon : MonoBehaviour
     private const float horizontalRotationDefautAngle = 0;
     private const float verticalRotationDefaultAngle = 90f;
 
-    private const float gravity = 9.8f;
     private const int lineRendererPointsPerUnit = 2;
 
     private float horizontalAngle = horizontalRotationDefautAngle;
@@ -67,8 +68,6 @@ public class Cannon : MonoBehaviour
 
     public void DrawTrajectory()
     {
-        //y = x tan θ − gx2 / 2v2 cos2 θ
-
         Vector3[] drawPoint = new Vector3[trajectoryLineMaxLength * lineRendererPointsPerUnit];
 
         if (drawPoint.Length == 0)
@@ -89,10 +88,7 @@ public class Cannon : MonoBehaviour
         {
             distance += distanceStep;
 
-            float angleTan = Mathf.Tan(shotAngle);
-            float angleCos = Mathf.Cos(shotAngle);
-
-            float height = distance * angleTan - (gravity * distance * distance) / (2 * shotPower * shotPower * angleCos * angleCos);
+            float height = Trajectory.GetHeightOverDistance(distance, shotAngle, shotPower);
 
             Vector3 point = tipDefault.position + tipDefault.forward * distance + tipOffset;
             point.y += height;
@@ -102,5 +98,11 @@ public class Cannon : MonoBehaviour
 
         trajectoryLineRenderer.positionCount = drawPoint.Length;
         trajectoryLineRenderer.SetPositions(drawPoint);
+    }
+
+    public void Shoot()
+    {
+        Projectile projectile = Instantiate(projectilePrefab, tip.position, tip.rotation);
+        projectile.Release(shotPower, tipDefault, tip);
     }
 }
