@@ -8,23 +8,19 @@ public class Projectile : MonoBehaviour
     [SerializeField]
     private LayerMask collisionLayerMask;
 
+    private const float gravity = 20f;
     private const float maxDistance = 100f;
-    private const float maxRicochetDistance = 100f;
-    private const float gravity = 9.8f;
+    private const float maxRicochetDistance = 50f;
+    private const float minReflectedVelocity = 1.5f;
 
-    private float velocity = 0f;
     private Coroutine movementCoroutine;
 
-    private RaycastHit raycastHitForward;
-    private RaycastHit raycastHitBottom;
-    private RaycastHit raycastHitSelected;
+    private RaycastHit raycastHit;
 
     public void Release(float velocityInit, Transform tipDefault, Transform tip) => movementCoroutine = StartCoroutine(ReleaseLoop(velocityInit, tipDefault, tip));
 
     private IEnumerator ReleaseLoop(float velocityInit, Transform tipDefault, Transform tip)
     {
-        velocity = velocityInit;
-
         float distance = 0f;
         float shotAngle = Vector3.Angle(tipDefault.forward, tip.forward) * Mathf.Deg2Rad;
 
@@ -34,17 +30,21 @@ public class Projectile : MonoBehaviour
 
         while (distance < maxDistance)
         {
-            distance += velocity * Time.fixedDeltaTime;
+            float step = velocityInit * Time.fixedDeltaTime;
 
-            float height = Trajectory.GetHeightOverDistance(distance, shotAngle, velocity);
-
+            distance += step;
+            float height = Trajectory.GetHeightOverDistance(distance, shotAngle, velocityInit);
             Vector3 point = tipDefaultPos + tipDefaultFwd * distance + tipOffset;
             point.y += height;
-
             transform.position = point;
 
-            if (DetectCollision(ref raycastHitSelected))
-                Ricochet();
+            float predictedDist = distance + step;
+            float predictedHeight = Trajectory.GetHeightOverDistance(predictedDist, shotAngle, velocityInit);
+            Vector3 predictedPoint = tipDefaultPos + tipDefaultFwd * predictedDist + tipOffset;
+            predictedPoint.y += predictedHeight;
+
+            if (PredictCollision(predictedPoint, step))
+                Ricochet(velocityInit);
 
             yield return new WaitForFixedUpdate();
         }
@@ -52,59 +52,65 @@ public class Projectile : MonoBehaviour
         CustomDestruction();
     }
 
-    private bool DetectCollision(ref RaycastHit selectedRaycastHit)
+    private bool PredictCollision(Vector3 nextPoint, float step)
     {
-        bool forwardCollision = Physics.BoxCast(transform.position, meshRenderer.bounds.extents, transform.forward, out raycastHitForward, Quaternion.identity, meshRenderer.bounds.size.z, collisionLayerMask);
-        bool bottomCollision = Physics.BoxCast(transform.position, meshRenderer.bounds.extents, transform.TransformDirection(Vector3.down), out raycastHitForward, Quaternion.identity, meshRenderer.bounds.size.z, collisionLayerMask);
+        Vector3 movementDir = (nextPoint - transform.position).normalized;
+        Vector3 bottomPoint = new Vector3(nextPoint.x, nextPoint.y - meshRenderer.bounds.extents.y, nextPoint.z);
+        float heightChange = Mathf.Abs(transform.position.y - nextPoint.y);
 
-        if (forwardCollision)
-        {
-            selectedRaycastHit = raycastHitForward;
-            return forwardCollision;
-        }
-
-        if (bottomCollision)
-        {
-            selectedRaycastHit = raycastHitBottom;
-            return bottomCollision;
-        }
-
-        return false;        
+        if (Physics.Raycast(nextPoint - movementDir * meshRenderer.bounds.extents.z, movementDir, out raycastHit, step, collisionLayerMask))
+            //if (Physics.Raycast(nextPoint, movementDir, out raycastHit, step, collisionLayerMask))
+            return true;
+        else if (Physics.Raycast(bottomPoint, Vector3.down, out raycastHit, heightChange, collisionLayerMask))
+            return true;
+        else
+            return false;
     }
 
-    private void Ricochet()
+    private void Ricochet(float velocityInit)
     {
         ResetMovement();
-        movementCoroutine = StartCoroutine(RicochetLoop());
+        movementCoroutine = StartCoroutine(RicochetLoop(velocityInit));
     }
 
-    private IEnumerator RicochetLoop()
+    private IEnumerator RicochetLoop(float velocityInit)
     {
-        Vector3 collisionDirNormalized = (transform.position - raycastHitSelected.point).normalized;
-        Vector3 projectionOverNormal = raycastHitSelected.normal * Vector3.Dot(raycastHitSelected.normal, collisionDirNormalized);
-        Vector3 reflectionBuildPoint = raycastHitSelected.point + collisionDirNormalized + (projectionOverNormal - collisionDirNormalized) * 2;
-        Vector3 reflectedDir = reflectionBuildPoint - raycastHitSelected.point;
+        Vector3 collisionDirNormalized = (transform.position - raycastHit.point).normalized;
+        Vector3 projectionOverNormal = raycastHit.normal * Vector3.Dot(raycastHit.normal, collisionDirNormalized);
+        Vector3 reflectionBuildPoint = raycastHit.point + collisionDirNormalized + (projectionOverNormal - collisionDirNormalized) * 2;
+        Vector3 reflectedDir = reflectionBuildPoint - raycastHit.point;
 
-        float velocityMultiplayer = Vector3.Dot(raycastHitSelected.normal, reflectedDir);
+        Debug.DrawRay(transform.position, -collisionDirNormalized * (raycastHit.point - transform.position).magnitude, Color.yellow);
+        Debug.DrawRay(raycastHit.point, raycastHit.normal * 10, Color.white);
+        Debug.DrawRay(raycastHit.point, reflectedDir * 10, Color.cyan);
 
-        if (velocityMultiplayer > 0.5f)
+        float velocityMultiplayer = Mathf.Abs(Vector3.Dot(collisionDirNormalized, reflectedDir));
+        float reflectedVelocity = velocityInit * (1 - velocityMultiplayer);
+
+        yield return new WaitForFixedUpdate();
+        transform.position = raycastHit.point + collisionDirNormalized * (meshRenderer.bounds.extents.z + 0.1f);
+        yield return new WaitForFixedUpdate();
+
+        if (reflectedVelocity < minReflectedVelocity)
             CustomDestruction();
 
-        velocity *= 1 - velocityMultiplayer;
-
         float distance = 0f;
-        while(distance < maxRicochetDistance)
+        float downForce = 0f;
+        while (distance < maxRicochetDistance)
         {
-            float step = velocity * Time.fixedDeltaTime;
+            float step = reflectedVelocity * Time.fixedDeltaTime;
             distance += step;
 
-            Vector3 position = transform.position + reflectedDir * step;
-            position.y -= gravity * Time.fixedDeltaTime;
-
+            Vector3 position = transform.position + reflectedDir * step + Vector3.down * (downForce * Time.fixedDeltaTime);
             transform.position = position;
 
-            if (DetectCollision(ref raycastHitSelected))
+            Vector3 predictedPosition = transform.position + reflectedDir * step + Vector3.down * (downForce * Time.fixedDeltaTime);
+
+            if (PredictCollision(predictedPosition, step))
                 CustomDestruction();
+
+            if (downForce < gravity)
+                downForce += velocityInit * Time.fixedDeltaTime;
 
             yield return new WaitForFixedUpdate();
         }

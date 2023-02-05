@@ -257,7 +257,7 @@ MonoBehaviour:
   projectilePrefab: {fileID: 3239497733802707, guid: a24c503e76bf21549b904f3f69b768df, type: 3}
   horizontalRotationRange: {x: -20, y: 20}
   verticalRotationRange: {x: 45, y: 90}
-  shotPower: 10
+  shotPower: 50
   trajectoryLineMaxLength: 100
 --- !u!1 &705507993
 GameObject:
@@ -377,7 +377,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 721823084}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: -5.9, z: -35}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -511,7 +511,7 @@ Transform:
   m_GameObject: {fileID: 937111645}
   m_LocalRotation: {x: -0.7071068, y: 0, z: 0, w: 0.7071068}
   m_LocalPosition: {x: 0, y: 16.5, z: 70}
-  m_LocalScale: {x: 7, y: 1, z: 4.5}
+  m_LocalScale: {x: 4, y: 1, z: 2.5}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 721823085}
@@ -692,8 +692,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1015577395}
   m_LocalRotation: {x: -0.3420201, y: 0, z: 0, w: 0.9396927}
-  m_LocalPosition: {x: 0, y: 13, z: 70}
-  m_LocalScale: {x: 7, y: 1, z: 4.5}
+  m_LocalPosition: {x: 0, y: 4.9, z: 60.4}
+  m_LocalScale: {x: 4, y: 1, z: 2.5}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 721823085}
