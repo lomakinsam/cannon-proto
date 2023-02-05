@@ -495,7 +495,7 @@ GameObject:
   - component: {fileID: 937111649}
   - component: {fileID: 937111648}
   - component: {fileID: 937111647}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Wall Side 1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -677,7 +677,7 @@ GameObject:
   - component: {fileID: 1015577399}
   - component: {fileID: 1015577398}
   - component: {fileID: 1015577397}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Wall Side 2
   m_TagString: Untagged
   m_Icon: {fileID: 0}

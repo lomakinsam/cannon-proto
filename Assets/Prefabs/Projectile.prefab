@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 5645772566801836017}
   - component: {fileID: 5645772566801836016}
   - component: {fileID: 3239497733802707}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Projectile
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -111,6 +111,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   meshRenderer: {fileID: 5645772566801836017}
+  hitDecalPrefab: {fileID: 5739620842740560422, guid: 0ff54dc160bc75a47bfd2c81f48a1c79, type: 3}
   collisionLayerMask:
     serializedVersion: 2
-    m_Bits: 1
+    m_Bits: 129

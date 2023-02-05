@@ -6,12 +6,15 @@ public class Projectile : MonoBehaviour
     [SerializeField]
     private MeshRenderer meshRenderer;
     [SerializeField]
+    private GameObject hitDecalPrefab;
+    [SerializeField]
     private LayerMask collisionLayerMask;
-
+    
     private const float gravity = 20f;
     private const float maxDistance = 100f;
     private const float maxRicochetDistance = 50f;
     private const float minReflectedVelocity = 1.5f;
+    private const int wallLayer = 7;
 
     private Coroutine movementCoroutine;
 
@@ -59,7 +62,6 @@ public class Projectile : MonoBehaviour
         float heightChange = Mathf.Abs(transform.position.y - nextPoint.y);
 
         if (Physics.Raycast(nextPoint - movementDir * meshRenderer.bounds.extents.z, movementDir, out raycastHit, step, collisionLayerMask))
-            //if (Physics.Raycast(nextPoint, movementDir, out raycastHit, step, collisionLayerMask))
             return true;
         else if (Physics.Raycast(bottomPoint, Vector3.down, out raycastHit, heightChange, collisionLayerMask))
             return true;
@@ -79,10 +81,6 @@ public class Projectile : MonoBehaviour
         Vector3 projectionOverNormal = raycastHit.normal * Vector3.Dot(raycastHit.normal, collisionDirNormalized);
         Vector3 reflectionBuildPoint = raycastHit.point + collisionDirNormalized + (projectionOverNormal - collisionDirNormalized) * 2;
         Vector3 reflectedDir = reflectionBuildPoint - raycastHit.point;
-
-        Debug.DrawRay(transform.position, -collisionDirNormalized * (raycastHit.point - transform.position).magnitude, Color.yellow);
-        Debug.DrawRay(raycastHit.point, raycastHit.normal * 10, Color.white);
-        Debug.DrawRay(raycastHit.point, reflectedDir * 10, Color.cyan);
 
         float velocityMultiplayer = Mathf.Abs(Vector3.Dot(collisionDirNormalized, reflectedDir));
         float reflectedVelocity = velocityInit * (1 - velocityMultiplayer);
@@ -109,6 +107,7 @@ public class Projectile : MonoBehaviour
             if (PredictCollision(predictedPosition, step))
                 CustomDestruction();
 
+
             if (downForce < gravity)
                 downForce += velocityInit * Time.fixedDeltaTime;
 
@@ -121,8 +120,24 @@ public class Projectile : MonoBehaviour
     private void CustomDestruction()
     {
         ResetMovement();
-
+        CreateHitDecal();
+        
         Destroy(gameObject);
+    }
+
+    private void CreateHitDecal()
+    {
+        if (raycastHit.transform == null) return;
+
+        Debug.Log(raycastHit.transform.gameObject.name);
+
+        if (raycastHit.transform.gameObject.layer == wallLayer)
+        {
+            GameObject decal = Instantiate(hitDecalPrefab);
+            decal.transform.position = raycastHit.point + raycastHit.normal * 0.01f;
+            decal.transform.forward = raycastHit.normal;
+            decal.transform.SetParent(raycastHit.transform, true);
+        }
     }
 
     private void ResetMovement()
