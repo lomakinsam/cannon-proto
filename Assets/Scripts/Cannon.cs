@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Cannon : MonoBehaviour
@@ -36,23 +35,7 @@ public class Cannon : MonoBehaviour
     private float horizontalAngle = horizontalRotationDefautAngle;
     private float verticalAngle = verticalRotationDefaultAngle;
 
-    private void OnDrawGizmos()
-    {
-        if (tip == null) return;
-
-        float rayDist = 10f;
-
-        Gizmos.color = Color.red;
-        Gizmos.DrawRay(tip.position, tip.forward * rayDist);
-
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawRay(tipDefault.position, tipDefault.forward * rayDist);
-
-        Vector3 trajectoryPoint = tip.position + tip.forward * rayDist;
-        float trajectoryProjection = Vector3.Dot(tipDefault.forward, trajectoryPoint - tip.position);
-        Gizmos.color = Color.cyan;
-        Gizmos.DrawRay(tipDefault.position, tipDefault.forward * trajectoryProjection);
-    }
+    private Coroutine shootAnimation;
 
     public void RotateVertically(float angle)
     {
@@ -102,7 +85,36 @@ public class Cannon : MonoBehaviour
 
     public void Shoot()
     {
+        if (shootAnimation != null)
+        {
+            StopCoroutine(shootAnimation);
+            shootAnimation = null;
+        }
+
+        shootAnimation = StartCoroutine(ShootAnimation());
+
         Projectile projectile = Instantiate(projectilePrefab);
         projectile.Release(shotPower, tipDefault, tip);
+    }
+
+    private IEnumerator ShootAnimation()
+    {
+        float time = 0;
+        float maxOffset = 5.5f;
+        float animDuration = 0.25f;
+
+        Vector3 defaultPos = new Vector3(0, 1.5f, 0);
+        barrel.localPosition = defaultPos;
+
+        while (time < animDuration)
+        {
+            float step = Mathf.PingPong(time, animDuration / 2);
+            Vector3 moveAxis = barrel.TransformDirection(Vector3.down);
+            barrel.localPosition = defaultPos + maxOffset * step * transform.InverseTransformDirection(moveAxis);
+
+            time += Time.deltaTime;
+
+            yield return null;
+        }
     }
 }
