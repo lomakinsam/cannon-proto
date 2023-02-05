@@ -14,6 +14,8 @@ public class Cannon : MonoBehaviour
     private LineRenderer trajectoryLineRenderer;
     [SerializeField]
     private Projectile projectilePrefab;
+    [SerializeField]
+    private CameraShaker cameraShaker;
 
     [Header("Rotation Limits")]
     [SerializeField]
@@ -85,6 +87,15 @@ public class Cannon : MonoBehaviour
 
     public void Shoot()
     {
+        PlayShootAnimation();
+        cameraShaker.Shake();
+        
+        Projectile projectile = Instantiate(projectilePrefab);
+        projectile.Release(shotPower, tipDefault, tip);
+    }
+
+    private void PlayShootAnimation()
+    {
         if (shootAnimation != null)
         {
             StopCoroutine(shootAnimation);
@@ -92,9 +103,6 @@ public class Cannon : MonoBehaviour
         }
 
         shootAnimation = StartCoroutine(ShootAnimation());
-
-        Projectile projectile = Instantiate(projectilePrefab);
-        projectile.Release(shotPower, tipDefault, tip);
     }
 
     private IEnumerator ShootAnimation()
