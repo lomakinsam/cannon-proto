@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Projectile : MonoBehaviour
@@ -8,7 +9,11 @@ public class Projectile : MonoBehaviour
     [SerializeField]
     private GameObject hitDecalPrefab;
     [SerializeField]
+    private ParticleSystem explosionPrefab;
+    [SerializeField]
     private LayerMask collisionLayerMask;
+
+    private static List<ParticleSystem> explosionsPool;
     
     private const float gravity = 20f;
     private const float maxDistance = 100f;
@@ -121,6 +126,7 @@ public class Projectile : MonoBehaviour
     {
         ResetMovement();
         CreateHitDecal();
+        CreateExplosion();
         
         Destroy(gameObject);
     }
@@ -129,8 +135,6 @@ public class Projectile : MonoBehaviour
     {
         if (raycastHit.transform == null) return;
 
-        Debug.Log(raycastHit.transform.gameObject.name);
-
         if (raycastHit.transform.gameObject.layer == wallLayer)
         {
             GameObject decal = Instantiate(hitDecalPrefab);
@@ -138,6 +142,42 @@ public class Projectile : MonoBehaviour
             decal.transform.forward = raycastHit.normal;
             decal.transform.SetParent(raycastHit.transform, true);
         }
+    }
+
+    private void CreateExplosion()
+    {
+        if (explosionsPool == null)
+            explosionsPool = new();
+
+        ParticleSystem selectedExplosion = null;
+
+        foreach (var explosion in explosionsPool)
+        {
+            if (!explosion.IsAlive(true))
+            {
+                selectedExplosion = explosion;
+                break;
+            }
+        }
+
+        if (selectedExplosion == null)
+        {
+            selectedExplosion = Instantiate(explosionPrefab);
+            explosionsPool.Add(selectedExplosion);
+        }
+
+        if (raycastHit.transform != null)
+        {
+            selectedExplosion.transform.position = raycastHit.point + raycastHit.normal;
+            selectedExplosion.transform.forward = raycastHit.normal;
+        }
+        else
+        {
+            selectedExplosion.transform.position = transform.position;
+            selectedExplosion.transform.forward = Vector3.up;
+        }
+
+        selectedExplosion.Play();
     }
 
     private void ResetMovement()

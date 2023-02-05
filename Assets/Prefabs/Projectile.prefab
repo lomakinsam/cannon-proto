@@ -112,6 +112,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   meshRenderer: {fileID: 5645772566801836017}
   hitDecalPrefab: {fileID: 5739620842740560422, guid: 0ff54dc160bc75a47bfd2c81f48a1c79, type: 3}
+  explosionPrefab: {fileID: 70931315391970615, guid: 083d4ccf485804f4aa7216b1e529441c, type: 3}
   collisionLayerMask:
     serializedVersion: 2
     m_Bits: 129
