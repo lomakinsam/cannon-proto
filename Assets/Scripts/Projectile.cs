@@ -22,7 +22,6 @@ public class Projectile : MonoBehaviour
     private const int wallLayer = 7;
 
     private Coroutine movementCoroutine;
-
     private RaycastHit raycastHit;
 
     public void Release(float velocityInit, Transform tipDefault, Transform tip) => movementCoroutine = StartCoroutine(ReleaseLoop(velocityInit, tipDefault, tip));

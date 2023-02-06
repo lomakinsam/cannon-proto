@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using UnityEngine;
 
 public class Cannon : MonoBehaviour
@@ -24,10 +25,12 @@ public class Cannon : MonoBehaviour
     private Vector2 verticalRotationRange = new Vector2(45f, 90f);
 
     [Header("Other")]
-    [SerializeField]
+    [SerializeField] [Range(0f, maxShotPower)]
     private float shotPower = 10f;
     [SerializeField]
     private int trajectoryLineMaxLength = 100;
+
+    public const float maxShotPower = 50f;
 
     private const float horizontalRotationDefautAngle = 0;
     private const float verticalRotationDefaultAngle = 90f;
@@ -38,6 +41,20 @@ public class Cannon : MonoBehaviour
     private float verticalAngle = verticalRotationDefaultAngle;
 
     private Coroutine shootAnimation;
+
+    public event Action<float> OnShotPowerChange;
+    public float ShotPower
+    {
+        get { return shotPower; }
+        set
+        {
+            shotPower = Mathf.Clamp(value, 0f, maxShotPower);
+            OnShotPowerChange?.Invoke(shotPower);
+            DrawTrajectory();
+        }
+    }
+
+    private void Awake() => DrawTrajectory();
 
     public void RotateVertically(float angle)
     {
@@ -53,6 +70,12 @@ public class Cannon : MonoBehaviour
 
     public void DrawTrajectory()
     {
+        if (shotPower < 1)
+        {
+            trajectoryLineRenderer.positionCount = 0;
+            return;
+        }
+
         Vector3[] drawPoint = new Vector3[trajectoryLineMaxLength * lineRendererPointsPerUnit];
 
         if (drawPoint.Length == 0)
@@ -87,6 +110,8 @@ public class Cannon : MonoBehaviour
 
     public void Shoot()
     {
+        if (shotPower < 1) return;
+
         PlayShootAnimation();
         cameraShaker.Shake();
         

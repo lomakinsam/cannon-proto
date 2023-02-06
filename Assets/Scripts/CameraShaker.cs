@@ -37,7 +37,6 @@ public class CameraShaker : MonoBehaviour
             float Znoise = shakeScale * maxShake * ((Mathf.PerlinNoise(Time.time * shakeFrequency, Time.time * shakeFrequency) - 0.5f) * 2);
 
             Vector3 noise = new Vector3(Xnoise, Ynoise, Znoise);
-            //transform.localPosition = defaultLocalPosition + noise;
             transform.localRotation = Quaternion.identity * Quaternion.Euler(noise);
 
             time += Time.deltaTime;
