@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 5645772566801836015}
   - component: {fileID: 5645772566801836014}
   - component: {fileID: 5645772566801836017}
-  - component: {fileID: 5645772566801836016}
   - component: {fileID: 3239497733802707}
   m_Layer: 8
   m_Name: Projectile
@@ -42,7 +41,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5645772566801836019}
-  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+  m_Mesh: {fileID: 0}
 --- !u!23 &5645772566801836017
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -85,19 +84,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!65 &5645772566801836016
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5645772566801836019}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &3239497733802707
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -110,9 +96,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7a599ec5b03c5c4da7ed626bfc053c4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  meshFilter: {fileID: 5645772566801836014}
   meshRenderer: {fileID: 5645772566801836017}
   hitDecalPrefab: {fileID: 5739620842740560422, guid: 0ff54dc160bc75a47bfd2c81f48a1c79, type: 3}
-  explosionPrefab: {fileID: 70931315391970615, guid: 083d4ccf485804f4aa7216b1e529441c, type: 3}
   collisionLayerMask:
     serializedVersion: 2
     m_Bits: 129

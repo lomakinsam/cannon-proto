@@ -1,19 +1,16 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Projectile : MonoBehaviour
 {
     [SerializeField]
+    private MeshFilter meshFilter;
+    [SerializeField]
     private MeshRenderer meshRenderer;
     [SerializeField]
     private GameObject hitDecalPrefab;
     [SerializeField]
-    private ParticleSystem explosionPrefab;
-    [SerializeField]
     private LayerMask collisionLayerMask;
-
-    private static List<ParticleSystem> explosionsPool;
     
     private const float gravity = 20f;
     private const float maxDistance = 100f;
@@ -24,7 +21,23 @@ public class Projectile : MonoBehaviour
     private Coroutine movementCoroutine;
     private RaycastHit raycastHit;
 
-    public void Release(float velocityInit, Transform tipDefault, Transform tip) => movementCoroutine = StartCoroutine(ReleaseLoop(velocityInit, tipDefault, tip));
+    public void Release(float velocityInit, Transform tipDefault, Transform tip)
+    {
+        GenerateRandomMesh();
+        movementCoroutine = StartCoroutine(ReleaseLoop(velocityInit, tipDefault, tip));
+    }
+
+    private void GenerateRandomMesh()
+    {
+        if (meshFilter.mesh.vertexCount == 0)
+            meshFilter.mesh = ProjectileMeshGenerator.GenerateMesh();
+        else
+        {
+            Mesh updatedMesh = meshFilter.mesh;
+            ProjectileMeshGenerator.RegenerateVertexNoise(ref updatedMesh);
+            meshFilter.mesh = updatedMesh;
+        }
+    }
 
     private IEnumerator ReleaseLoop(float velocityInit, Transform tipDefault, Transform tip)
     {
@@ -126,8 +139,8 @@ public class Projectile : MonoBehaviour
         ResetMovement();
         CreateHitDecal();
         CreateExplosion();
-        
-        Destroy(gameObject);
+
+        gameObject.SetActive(false);
     }
 
     private void CreateHitDecal()
@@ -145,38 +158,20 @@ public class Projectile : MonoBehaviour
 
     private void CreateExplosion()
     {
-        if (explosionsPool == null)
-            explosionsPool = new();
-
-        ParticleSystem selectedExplosion = null;
-
-        foreach (var explosion in explosionsPool)
-        {
-            if (!explosion.IsAlive(true))
-            {
-                selectedExplosion = explosion;
-                break;
-            }
-        }
-
-        if (selectedExplosion == null)
-        {
-            selectedExplosion = Instantiate(explosionPrefab);
-            explosionsPool.Add(selectedExplosion);
-        }
+        ParticleSystem explosionFX = PoolExplosionFX.Instance.GetExplosionFX();
 
         if (raycastHit.transform != null)
         {
-            selectedExplosion.transform.position = raycastHit.point + raycastHit.normal;
-            selectedExplosion.transform.forward = raycastHit.normal;
+            explosionFX.transform.position = raycastHit.point + raycastHit.normal;
+            explosionFX.transform.forward = raycastHit.normal;
         }
         else
         {
-            selectedExplosion.transform.position = transform.position;
-            selectedExplosion.transform.forward = Vector3.up;
+            explosionFX.transform.position = transform.position;
+            explosionFX.transform.forward = Vector3.up;
         }
 
-        selectedExplosion.Play();
+        explosionFX.Play();
     }
 
     private void ResetMovement()
