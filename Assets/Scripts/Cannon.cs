@@ -8,8 +8,6 @@ public class Cannon : MonoBehaviour
     [SerializeField]
     private Transform tip;
     [SerializeField]
-    private Transform tipDefault;
-    [SerializeField]
     private Transform barrel;
     [SerializeField]
     private LineRenderer trajectoryLineRenderer;
@@ -22,18 +20,14 @@ public class Cannon : MonoBehaviour
     [SerializeField]
     private Vector2 verticalRotationRange = new Vector2(45f, 90f);
 
-    [Header("Other")]
+    [Header("Shot Config")]
     [SerializeField] [Range(0f, maxShotPower)]
     private float shotPower = 10f;
-    [SerializeField]
-    private int trajectoryLineMaxLength = 100;
 
-    public const float maxShotPower = 50f;
+    public const float maxShotPower = 100f;
 
     private const float horizontalRotationDefautAngle = 0;
     private const float verticalRotationDefaultAngle = 90f;
-
-    private const int lineRendererPointsPerUnit = 2;
 
     private float horizontalAngle = horizontalRotationDefautAngle;
     private float verticalAngle = verticalRotationDefaultAngle;
@@ -68,42 +62,23 @@ public class Cannon : MonoBehaviour
 
     public void DrawTrajectory()
     {
-        if (shotPower < 1)
+        if(shotPower < 1)
         {
             trajectoryLineRenderer.positionCount = 0;
             return;
         }
 
-        Vector3[] drawPoint = new Vector3[trajectoryLineMaxLength * lineRendererPointsPerUnit];
+        Vector3 velocity = tip.forward * shotPower;
+        Vector3[] drawPoints = Trajectory.SimulatePath(tip.position, velocity);
 
-        if (drawPoint.Length == 0)
+        if (drawPoints.Length == 0)
         {
             trajectoryLineRenderer.positionCount = 0;
             return;
         }
 
-        drawPoint[0] = tip.position;
-
-        float distance = 0f;
-        float distanceStep = 1 / (float)lineRendererPointsPerUnit;
-        float shotAngle = Vector3.Angle(tipDefault.forward, tip.forward) * Mathf.Deg2Rad;
-
-        Vector3 tipOffset = tip.position - tipDefault.position;
-
-        for (int i = 1; i < drawPoint.Length; i++)
-        {
-            distance += distanceStep;
-
-            float height = Trajectory.GetHeightOverDistance(distance, shotAngle, shotPower);
-
-            Vector3 point = tipDefault.position + tipDefault.forward * distance + tipOffset;
-            point.y += height;
-
-            drawPoint[i] = point;
-        }
-
-        trajectoryLineRenderer.positionCount = drawPoint.Length;
-        trajectoryLineRenderer.SetPositions(drawPoint);
+        trajectoryLineRenderer.positionCount = drawPoints.Length;
+        trajectoryLineRenderer.SetPositions(drawPoints);
     }
 
     public void Shoot()
@@ -114,7 +89,8 @@ public class Cannon : MonoBehaviour
         cameraShaker.Shake();
 
         Projectile projectile = PoolProjectile.Instance.GetProjectile();
-        projectile.Release(shotPower, tipDefault, tip);
+        projectile.transform.position = tip.position;
+        projectile.SimulateForce(tip.forward * shotPower);
     }
 
     private void PlayShootAnimation()
