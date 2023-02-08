@@ -39,7 +39,7 @@ public static class Trajectory
     {
         float step = Time.fixedDeltaTime * simulationSpeed;
 
-        Vector3 resultingVelocity = velocity + (Vector3.down * downForce * downForce * downForceConstant);
+        Vector3 resultingVelocity = GetResultingVelocity(velocity, downForce);
         position += resultingVelocity * step;
 
         velocity *= 1 - (drag * step);
@@ -48,4 +48,6 @@ public static class Trajectory
 
         return position;
     }
+
+    public static Vector3 GetResultingVelocity(Vector3 velocity, float downForce) => velocity + (Vector3.down * downForce * downForce * downForceConstant);
 }

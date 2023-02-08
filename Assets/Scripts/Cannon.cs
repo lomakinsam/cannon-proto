@@ -116,8 +116,7 @@ public class Cannon : MonoBehaviour
         while (time < animDuration)
         {
             float step = Mathf.PingPong(time, animDuration / 2);
-            Vector3 moveAxis = barrel.TransformDirection(Vector3.down);
-            barrel.localPosition = defaultPos + maxOffset * step * transform.InverseTransformDirection(moveAxis);
+            barrel.localPosition = defaultPos + maxOffset * step * transform.InverseTransformDirection(-barrel.up);
 
             time += Time.deltaTime;
 

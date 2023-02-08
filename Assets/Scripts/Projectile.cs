@@ -67,12 +67,10 @@ public class Projectile : MonoBehaviour
 
     private bool RecalculateVelocity(ref Vector3 velocity, ref float downForce)
     {
-        Vector3 velocityDirectionNegated = -(velocity + Vector3.down * downForce).normalized;
-        Vector3 projectionOverNormal = raycastHit.normal * Vector3.Dot(raycastHit.normal, velocityDirectionNegated);
-        Vector3 reflectionBuildPoint = raycastHit.point + velocityDirectionNegated + (projectionOverNormal - velocityDirectionNegated) * 2;
-        Vector3 reflectedDirection = reflectionBuildPoint - raycastHit.point;
+        Vector3 resultingVelocityDirection = Trajectory.GetResultingVelocity(velocity, downForce).normalized;
+        Vector3 reflectedDirection = Vector3.Reflect(resultingVelocityDirection, raycastHit.normal);
 
-        float collisionDirectionSimilarity = Mathf.Abs(Vector3.Dot(velocityDirectionNegated, raycastHit.normal));
+        float collisionDirectionSimilarity = Mathf.Abs(Vector3.Dot(reflectedDirection, raycastHit.normal));
 
         downForce *= 1 - collisionDirectionSimilarity;
         velocity = (reflectedDirection * velocity.magnitude + Vector3.up * verticalBounceForce) * (1 - collisionDirectionSimilarity);
